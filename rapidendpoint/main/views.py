@@ -1,48 +1,77 @@
-import requests
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
-from .utils import signinfo_endpoint, OnlyFansAPIWrapper  # Assuming the wrapper is in utils.py or a similar file
+from django.http import JsonResponse
+from .login_wrapper import OnlyFansLoginWrapper
+import requests
+import logging
+
+# Configure logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+# File handler
+fh = logging.FileHandler('onlyfans_login_view.log')
+fh.setLevel(logging.DEBUG)
+
+# Console handler
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+
+# Formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+fh.setFormatter(formatter)
+ch.setFormatter(formatter)
+
+# Add handlers to logger
+logger.addHandler(fh)
+logger.addHandler(ch)
 
 def login_view(request):
     if request.method == 'POST':
-        email = request.POST['email']
-        password = request.POST['password']
-        user_agent = request.META['HTTP_USER_AGENT']
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        recaptcha_response = request.POST.get('g-recaptcha-response')
+        user_agent = request.META.get('HTTP_USER_AGENT')
 
-        onlyfans = OnlyFansAPIWrapper()
-        try:
-            login_response = onlyfans.login(email, password)
-            request.session['email'] = email
-            request.session['password'] = password
-            request.session['user_agent'] = user_agent
-            request.session['onlyfans_cookies'] = login_response['cookies']  # Store cookies in session if needed
-            return redirect('dashboard')
-        except requests.exceptions.HTTPError as e:
-            return render(request, 'login.html', {'error': str(e)})
+        logger.debug(f"Received login request with email: {email}, user_agent: {user_agent}")
+
+        if email and password and recaptcha_response and user_agent:
+            wrapper = OnlyFansLoginWrapper(email, password, recaptcha_response, user_agent)
+            success, data = wrapper.login()
+
+            if success:
+                logger.info("Login successful")
+                request.session['onlyfans_cookies'] = data
+                request.session['email'] = email
+                request.session['user_agent'] = user_agent
+                return JsonResponse({'status': 'success', 'message': 'Login successful!'})
+            else:
+                logger.error(f"Login failed: {data}")
+                return JsonResponse({'status': 'error', 'message': data})
+        else:
+            logger.error("Missing required fields")
+            return JsonResponse({'status': 'error', 'message': 'Missing required fields!'})
 
     return render(request, 'login.html')
 
 def dashboard_view(request):
     email = request.session.get('email')
-    password = request.session.get('password')
-    user_agent = request.session.get('user_agent')
     onlyfans_cookies = request.session.get('onlyfans_cookies')
+    user_agent = request.session.get('user_agent')
 
-    if not email or not password or not user_agent:
+    if not email or not onlyfans_cookies:
         return redirect('login')
-
-    signinfo_data = signinfo_endpoint(user_agent)
 
     onlyfans = OnlyFansAPIWrapper()
     try:
         user_details = onlyfans.get_user_details(cookies=onlyfans_cookies)
         context = {
             'email': email,
-            'password': password,
-            'user_agent': user_agent,
-            'signinfo_data': signinfo_data,
             'user_details': user_details
         }
         return render(request, 'dashboard.html', context)
     except requests.exceptions.HTTPError as e:
-        return render(request, 'dashboard.html', {'error': str(e)})
+        logger.error(f"Failed to get user details: {str(e)}")
+        return render(request, 'dashboard.html', {'error': f"Failed to get user details: {str(e)}"})
+    except Exception as e:
+        logger.error(f"An error occurred: {str(e)}")
+        return render(request, 'dashboard.html', {'error': f"An error occurred: {str(e)}"})

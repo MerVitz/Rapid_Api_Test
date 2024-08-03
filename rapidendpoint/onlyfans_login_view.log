@@ -1,0 +1,6 @@
+2024-08-02 19:48:45,219 - main.views - DEBUG - Received login request with email: valentinlazo2000@gmail.com, user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36
+2024-08-02 19:48:46,507 - main.views - ERROR - Login failed: Login failed: {"error":{"code":0,"message":"Something went wrong. [BB91C8D6]"}}
+2024-08-02 19:48:53,512 - main.views - DEBUG - Received login request with email: valentinlazo2000@gmail.com, user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36
+2024-08-02 19:48:54,685 - main.views - ERROR - Login failed: Login failed: {"error":{"code":0,"message":"Something went wrong. [BB91C8D6]"}}
+2024-08-02 19:49:08,411 - main.views - DEBUG - Received login request with email: valentinlazo2000@gmail.com, user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36
+2024-08-02 19:49:09,097 - main.views - ERROR - Login failed: Login failed: {"error":{"code":0,"message":"Something went wrong. [BB91C8D6]"}}
