@@ -1,19 +1,57 @@
 from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import traceback
+import json
 import time
 import pickle
+import traceback
 
-# Initialize the WebDriver
+# Initialize Chrome with DevTools Protocol enabled
+chrome_options = Options()
+chrome_options.add_argument("--auto-open-devtools-for-tabs")
+chrome_options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
+
+# Path to your ChromeDriver
 service = Service('D:\\chromedriver-win64\\chromedriver.exe')
-driver = webdriver.Chrome(service=service)
+driver = webdriver.Chrome(service=service, options=chrome_options)
 
 # Navigate to OnlyFans login page
-driver.get('https://onlyfans.com')
+driver.get("https://onlyfans.com")
 time.sleep(5)  # Allow some time for the page to load
+
+# Function to capture and save network logs
+def capture_network_logs():
+    logs = driver.get_log('performance')
+    request_headers = {}
+    response_headers = {}
+    request_payload = {}
+    cookies = driver.get_cookies()
+
+    for entry in logs:
+        log = json.loads(entry['message'])['message']
+        if log['method'] == 'Network.requestWillBeSent':
+            if log['params']['request']['url'] == "https://onlyfans.com/api2/v2/users/login":
+                request_headers = log['params']['request']['headers']
+                request_payload = log['params']['request']['postData'] if 'postData' in log['params']['request'] else {}
+                with open('request_headers.json', 'w') as f:
+                    json.dump(request_headers, f, indent=4)
+                with open('request_payload.json', 'w') as f:
+                    json.dump(request_payload, f, indent=4)
+                print("Request headers and payload details saved successfully.")
+        if log['method'] == 'Network.responseReceived':
+            if log['params']['response']['url'] == "https://onlyfans.com/api2/v2/users/login":
+                response_headers = log['params']['response']['headers']
+                with open('response_headers.json', 'w') as f:
+                    json.dump(response_headers, f, indent=4)
+                print("Response headers saved successfully.")
+    
+    # Save cookies
+    with open('cookies.json', 'w') as f:
+        json.dump(cookies, f, indent=4)
+    print("Cookies saved successfully.")
 
 def interactable(driver, by, value, wait_time=40):
     try:
@@ -41,8 +79,6 @@ try:
         raise Exception("Password field not found.")
 
     print("Please enter your email and password in the browser window and press Enter here.")
-
-    # Wait for user input to proceed
     input("Press Enter after entering your email and password...")
 
     # Automatically click the login button
@@ -78,11 +114,9 @@ try:
     if "https://onlyfans.com/" in driver.current_url:
         print("Login successful")
 
-        # Save cookies to a file
-        cookies = driver.get_cookies()
-        with open('cookies.pkl', 'wb') as file:
-            pickle.dump(cookies, file)
-        print("Cookies saved successfully.")
+        # Capture and save network logs
+        capture_network_logs()
+
     else:
         print("Login failed or still pending.")
 

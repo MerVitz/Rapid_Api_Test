@@ -1,0 +1,15 @@
+{
+    "Accept": "application/json, text/plain, */*",
+    "Content-Type": "application/json",
+    "Referer": "https://onlyfans.com/",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+    "app-token": "33d57ade8c02dbc5a333db99ff9ae26a",
+    "sec-ch-ua": "\"Not)A;Brand\";v=\"99\", \"Google Chrome\";v=\"127\", \"Chromium\";v=\"127\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sign": "27475:b64ac2ee2e0cb8356b6e705118c0058464125851:8e:66ad12ee",
+    "time": "1722699473869",
+    "x-bc": "9d43388e9d294215fc66208479a84126fe00a842",
+    "x-hash": "8ZJxTz1feG9Lp+esCseaLpN/X04z8TN67C9FSA==",
+    "x-of-rev": "202408021709-590156ed58"
+}
