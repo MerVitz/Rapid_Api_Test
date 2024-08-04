@@ -7,9 +7,9 @@
     "sec-ch-ua": "\"Not)A;Brand\";v=\"99\", \"Google Chrome\";v=\"127\", \"Chromium\";v=\"127\"",
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": "\"Windows\"",
-    "sign": "27475:b64ac2ee2e0cb8356b6e705118c0058464125851:8e:66ad12ee",
-    "time": "1722699473869",
-    "x-bc": "9d43388e9d294215fc66208479a84126fe00a842",
-    "x-hash": "8ZJxTz1feG9Lp+esCseaLpN/X04z8TN67C9FSA==",
-    "x-of-rev": "202408021709-590156ed58"
+    "sign": "27527:b76a1a21a7c7169f59b21e7829609e2fecaf1d6f:7c1:66ae794d",
+    "time": "1722767346840",
+    "x-bc": "c8f4f60656e26c30a0e5f70ef7321f967215fceb",
+    "x-hash": "Zs7S82lTjerhIfKjNddolGXz9QS0LJ6mXHDXSg==",
+    "x-of-rev": "202408031838-590156ed58"
 }
