@@ -16,7 +16,7 @@ chrome_options.add_argument("--auto-open-devtools-for-tabs")
 chrome_options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
 
 # Path to your ChromeDriver
-service = Service('D:\\chromedriver-win64\\chromedriver.exe')
+service = Service('D:\My_Dependencies\chromedriver-win64\chromedriver.exe')
 driver = webdriver.Chrome(service=service, options=chrome_options)
 
 # Navigate to OnlyFans login page

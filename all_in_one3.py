@@ -9,6 +9,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import traceback
 from requests.cookies import RequestsCookieJar
+"""
+This file is working corrctly weel and good, even in terms of logging details 
+and flow of conetnt but there is some capabilty
+
+
+"""
+
 
 # Initialize Chrome with DevTools Protocol enabled
 chrome_options = Options()
@@ -16,7 +23,7 @@ chrome_options.add_argument("--auto-open-devtools-for-tabs")
 chrome_options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
 
 # Path to your ChromeDriver
-service = Service('D:\\chromedriver-win64\\chromedriver.exe')
+service = Service('D:\My_Dependencies\chromedriver-win64\chromedriver.exe')
 driver = webdriver.Chrome(service=service, options=chrome_options)
 
 # Navigate to OnlyFans login page
@@ -239,3 +246,5 @@ def get_payout_details():
         print(f"Error sending request: {e}")
 
 get_payout_details()
+
+

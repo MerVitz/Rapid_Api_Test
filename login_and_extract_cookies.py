@@ -8,7 +8,7 @@ import time
 import pickle
 
 # Initialize the WebDriver
-service = Service('D:\\chromedriver-win64\\chromedriver.exe')
+service = Service('D:\My_Dependencies\chromedriver-win64\chromedriver.exe')
 driver = webdriver.Chrome(service=service)
 
 # Navigate to OnlyFans login page

@@ -16,7 +16,7 @@ chrome_options.add_argument("--auto-open-devtools-for-tabs")
 chrome_options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
 
 # Path to your ChromeDriver
-service = Service('D:\My_Dependencies\chromedriver-win64\chromedriver.exe')
+service = Service('D:\\My_Dependencies\\chromedriver-win64\\chromedriver.exe')
 driver = webdriver.Chrome(service=service, options=chrome_options)
 
 # Navigate to OnlyFans login page
@@ -81,6 +81,48 @@ def interactable(driver, by, value, wait_time=40):
         print(f"Error finding element: {by}={value} - {e}")
         return None
 
+def check_recaptcha():
+    logs = driver.get_log('performance')
+    recaptcha_detected = False
+    recaptcha_payload_detected = False
+    recaptcha_solved = False
+
+    for entry in logs:
+        log = json.loads(entry['message'])['message']
+        if log['method'] == 'Network.requestWillBeSent':
+            url = log['params']['request']['url']
+            
+            # Check for reCAPTCHA initial requests
+            if "recaptcha.net/recaptcha/enterprise.js" in url or \
+               "www.gstatic.com/recaptcha/releases/" in url or \
+               "recaptcha.net/recaptcha/enterprise/anchor" in url:
+                recaptcha_detected = True
+            
+            # Check for reCAPTCHA challenge payload request
+            if "recaptcha.net/recaptcha/enterprise/payload" in url:
+                recaptcha_payload_detected = True
+            
+            # Check for reCAPTCHA userverify request
+            if "recaptcha.net/recaptcha/enterprise/userverify" in url:
+                recaptcha_solved = True
+
+    # Return True if the reCAPTCHA was detected and solved
+    if recaptcha_detected and recaptcha_payload_detected and recaptcha_solved:
+        return True
+
+    return False
+
+def click_login_button():
+    login_button = interactable(driver, By.XPATH, '//button[contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "log in")]')
+    if not login_button:
+        login_button = interactable(driver, By.CSS_SELECTOR, 'button.g-btn.m-rounded.m-block.m-md.mb-0')
+
+    if login_button and login_button.is_displayed() and login_button.is_enabled():
+        driver.execute_script("arguments[0].click();", login_button)
+        print("Login button clicked.")
+    else:
+        raise Exception("Login button not interactable.")
+
 try:
     # Wait for the email field to be present
     email_field = interactable(driver, By.NAME, 'email')
@@ -95,38 +137,29 @@ try:
     print("Please enter your email and password in the browser window and press Enter here.")
     input("Press Enter after entering your email and password...")
 
-    # Automatically click the login button
-    login_button = interactable(driver, By.XPATH, '//button[contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "log in")]')
-    if not login_button:
-        login_button = interactable(driver, By.CSS_SELECTOR, 'button.g-btn.m-rounded.m-block.m-md.mb-0')
+    # Click the login button
+    click_login_button()
+    print("Checking for reCAPTCHA challenge...")
 
-    if login_button and login_button.is_displayed() and login_button.is_enabled():
-        driver.execute_script("arguments[0].click();", login_button)
-        print("Login button clicked. Please solve the CAPTCHA manually if it appears.")
-    else:
-        raise Exception("Login button not interactable.")
+    # Check for reCAPTCHA challenge
+    if check_recaptcha():
+        print("reCAPTCHA challenge detected. Please solve the CAPTCHA manually.")
+        input("Press Enter after solving the CAPTCHA...")
 
-    # Wait for user to solve CAPTCHA
-    input("Press Enter after solving the CAPTCHA (if it appears)...")
-
-    # Try to click the login button again after CAPTCHA is solved
-    try:
-        login_button = interactable(driver, By.XPATH, '//button[contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "log in")]')
-        if not login_button:
-            login_button = interactable(driver, By.CSS_SELECTOR, 'button.g-btn.m-rounded.m-block.m-md.mb-0')
-        if login_button and login_button.is_displayed() and login_button.is_enabled():
-            driver.execute_script("arguments[0].click();", login_button)
-            print("Login button clicked again after CAPTCHA.")
-    except:
-        print("Re-located login button not clickable, it might not be necessary.")
+        # Click the login button again after solving CAPTCHA
+        click_login_button()
+        print("Login button clicked again after CAPTCHA.")
 
     # Wait for login to complete
-    while "https://onlyfans.com/my" not in driver.current_url and driver.execute_script("return document.readyState") != "complete":
+    while "https://onlyfans.com/me" not in driver.current_url and driver.execute_script("return document.readyState") != "complete":
         print("Waiting for login to complete...")
         time.sleep(5)
 
     if "https://onlyfans.com/" in driver.current_url:
         print("Login successful")
+        
+        # Allow time for network logs to be captured
+        time.sleep(10)
 
         # Capture and save network logs
         capture_network_logs()
@@ -211,16 +244,17 @@ def get_payout_details():
         return
 
     # Construct the payout request URL
-    url = "https://onlyfans.p.rapidapi.com/statements/payouts/"
+    url = "https://onlyfans.p.rapidapi.com/users/payouts"
 
-    # Make the request
+    # Send the request to the payout endpoint
     try:
-        response = requests.get(url, headers=rapidapi_headers, params=querystring, cookies=request_cookies)
-        response.raise_for_status()  # Check if the request was successful
-        print("Payout details request successful.")
-        print(response.json())
-    except requests.exceptions.RequestException as e:
-        print(f"Request failed: {e}")
+        response = requests.get(url, headers=rapidapi_headers, cookies=request_cookies, params=querystring)
+        if response.status_code == 200:
+            print("Request sent to payout endpoint successfully.")
+            print(response.json())
+        else:
+            print(f"Request failed with status code {response.status_code}: {response.text}")
+    except requests.RequestException as e:
+        print(f"Error sending request: {e}")
 
-# Call the function to get payout details
 get_payout_details()
